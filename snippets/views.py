@@ -23,6 +23,11 @@ class SnippetList(generics.ListCreateAPIView):
         mixins.ListModelMixin, 
         mixins.CreateModelMixin, 
         generics.GenericAPIView
+
+    In the template:
+        {% for snippet in snippet_list %}
+        ..
+        {% endfor %}
     """
     queryset = Snippet.objects.all()
     serializer = SnippetSerializer
@@ -34,6 +39,9 @@ class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
         mixins.UpdateModelMixin, 
         mixins.DestroyModelMixin, 
         generics.GenericAPIView
+        
+        In the template:
+            {{item.code}}
     """
     queryset = Snippet.objects.all()
     serializer = SnippetSerializer
