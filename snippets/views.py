@@ -8,6 +8,7 @@ API views:
 '''
 from .models import Snippet
 from .serializers import SnippetSerializer
+from .serializers import UserSerializer
 from django.http import Http404
 
 from rest_framework.views import APIView
@@ -16,6 +17,21 @@ from rest_framework import status
 
 from rest_framework import mixins
 from rest_framework import generics
+
+from django.contrib.auth.models import User
+
+from rest_framework import permissions
+
+from .permissions import IsOwnerOrReadOnly
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 class SnippetList(generics.ListCreateAPIView):
     """
@@ -30,7 +46,19 @@ class SnippetList(generics.ListCreateAPIView):
         {% endfor %}
     """
     queryset = Snippet.objects.all()
-    serializer = SnippetSerializer
+    serializer_class = SnippetSerializer
+
+    # Allow only authenticated and owner to create
+    # otherwise everyone else has read permissions
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+
+    def pre_save(self, obj):
+        """
+        Associate the user that created the snippet
+        by passing along this request.user data through
+        the serialization
+        """
+        obj.owner = self.request.user
 
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -44,43 +72,55 @@ class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
             {{item.code}}
     """
     queryset = Snippet.objects.all()
-    serializer = SnippetSerializer
+    serializer_class = SnippetSerializer
 
+    # Allow only authenticated and owner to create
+    # otherwise everyone else has read permissions
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
-class SnippetList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    def pre_save(self, obj):
         """
-        We'll take a moment to examine exactly what's happening here. 
-        We're building our view using GenericAPIView, and 
-        adding in ListModelMixin and CreateModelMixin.
-
-        The base class provides the core functionality, 
-        and the mixin classes provide the .list() and .create() actions.
-        We're then explicitly binding the get and post methods 
-        to the appropriate actions. Simple enough stuff so far.
+        Associate the user that created the snippet
+        by passing along this request.user data through
+        the serialization
         """
+        obj.owner = self.request.user
 
-        queryset = Snippet.objects.all()
-        serializer_class = SnippetSerializer
+
+# class SnippetList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+#         """
+#         We'll take a moment to examine exactly what's happening here. 
+#         We're building our view using GenericAPIView, and 
+#         adding in ListModelMixin and CreateModelMixin.
+
+#         The base class provides the core functionality, 
+#         and the mixin classes provide the .list() and .create() actions.
+#         We're then explicitly binding the get and post methods 
+#         to the appropriate actions. Simple enough stuff so far.
+#         """
+
+#         queryset = Snippet.objects.all()
+#         serializer_class = SnippetSerializer
  
-        def get(self, request, *args, **kwargs):
-            # GenericAPIView provides list() method
-            return self.list(request, *args, **kwargs)
+#         def get(self, request, *args, **kwargs):
+#             # GenericAPIView provides list() method
+#             return self.list(request, *args, **kwargs)
 
-        def post(self, request, *args, **kwargs):
-            return self.create(request, *args, **kwargs)
+#         def post(self, request, *args, **kwargs):
+#             return self.create(request, *args, **kwargs)
 
-class SnippetDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
-        queryset = Snippet.objects.all()
-        serializer_class = SnippetSerializer
+# class SnippetDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+#         queryset = Snippet.objects.all()
+#         serializer_class = SnippetSerializer
 
-        def get(self, request, *args, **kwargs):
-            return self.retrieve(request, *args, **kwargs)
+#         def get(self, request, *args, **kwargs):
+#             return self.retrieve(request, *args, **kwargs)
         
-        def put(self, request, *args, **kwargs):
-            return self.update(request, *args, **kwargs)
+#         def put(self, request, *args, **kwargs):
+#             return self.update(request, *args, **kwargs)
         
-        def delete(self, request, *args, **kwargs):
-            return self.destroy(request, *args, **kwargs)
+#         def delete(self, request, *args, **kwargs):
+#             return self.destroy(request, *args, **kwargs)
 
 
 

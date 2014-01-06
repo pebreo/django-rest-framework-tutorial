@@ -1,6 +1,7 @@
 from django.forms import widgets
 from rest_framework import serializers
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
+from django.contrib.auth.models import User
 
 # # long way
 # class SnippetSerializer(serializers.Serializer):
@@ -32,8 +33,20 @@ from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 #         return Snippet(**attrs)
 
 # short way
+class UserSerializer(serializers.ModelSerializer):
+    # Enable serializing the related field snippets
+    # We do this because snippets is a reverse relationship on the User model
+    # it wouldn't be included by default that's why we explicitly do it here
+    snippets = serializers.PrimaryKeyRelatedField(many=True)
+    class Meta:
+        model = User
+        fields = ('id','username','snippets')
+
+
 class SnippetSerializer(serializers.ModelSerializer):
     'The short way to serialize data'
+    # Enable serializing the field
+    owner = serializers.Field(source='owner.username')
     class Meta:
         model = Snippet
-        fields = ('id','title','code','linenos','language','style')
+        fields = ('id','owner','title','code','linenos','language','style')
