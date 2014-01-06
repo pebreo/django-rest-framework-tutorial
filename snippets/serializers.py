@@ -32,21 +32,38 @@ from django.contrib.auth.models import User
 
 #         return Snippet(**attrs)
 
-# short way
-class UserSerializer(serializers.ModelSerializer):
-    # Enable serializing the related field snippets
-    # We do this because snippets is a reverse relationship on the User model
-    # it wouldn't be included by default that's why we explicitly do it here
-    snippets = serializers.PrimaryKeyRelatedField(many=True)
-    class Meta:
-        model = User
-        fields = ('id','username','snippets')
-
-
-class SnippetSerializer(serializers.ModelSerializer):
-    'The short way to serialize data'
-    # Enable serializing the field
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.Field(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+
     class Meta:
         model = Snippet
-        fields = ('id','owner','title','code','linenos','language','style')
+        # note: the highlight field as an URL/Hyperlink as we defined above
+        fields = ('url','highlight','owner','title','code','linenos','language','style')
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail')
+
+    class Meta:
+        model = User
+        fields = ('url','username','snippets')
+
+
+# short way
+# class UserSerializer(serializers.ModelSerializer):
+#     # Enable serializing the related field snippets
+#     # We do this because snippets is a reverse relationship on the User model
+#     # it wouldn't be included by default that's why we explicitly do it here
+#     snippets = serializers.PrimaryKeyRelatedField(many=True)
+#     class Meta:
+#         model = User
+#         fields = ('id','username','snippets')
+
+
+# class SnippetSerializer(serializers.ModelSerializer):
+#     'The short way to serialize data'
+#     # Enable serializing the field
+#     owner = serializers.Field(source='owner.username')
+#     class Meta:
+#         model = Snippet
+#         fields = ('id','owner','title','code','linenos','language','style')
