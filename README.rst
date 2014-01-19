@@ -18,6 +18,7 @@ To checkout and run each branch just type the following:
 
 .. code:: bash
     
+    $ pip install -r requirements.txt
     $ cd myrepo
     $ git checkout <branchname>
     $ git branch -v
