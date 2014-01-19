@@ -6,8 +6,8 @@ This is the code for the Django Rest Framework `tutorial <http://www.django-rest
 There are 6 branches in this repo.
 
 1) "master" - covers Part 1 of the tutorial
-2) "part2" - covers Part 2 of the tutorial
-3) "part3" - "      "    3 "   "  "
+2) "part2" - covers Part 2 
+3) "part3" - covers Part 3
 4) "part4-auth" - covers Part 4
 5) "part5-relationships" - covers Part 5
 6) "part6-viewsets" - covers Part 6
